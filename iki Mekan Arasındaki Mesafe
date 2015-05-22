@@ -1,0 +1,125 @@
+//MapController Sayfası
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using YelkovanProject.Models;
+
+namespace YelkovanProject.Controllers
+{
+    public class mapController : Controller
+    {
+        // GET: map
+        public ActionResult Index()
+        {
+            YELKOVANEntities myEntityModel = new YELKOVANEntities();
+
+            return View(myEntityModel.Mekans.ToList<Mekan>());
+        }
+
+        [HttpPost]
+        public ActionResult Search2(string name, string distance = "0")
+        {
+            YELKOVANEntities GE = new YELKOVANEntities();
+            //var result = GE.Geos.Where(x => x.name.StartsWith(name)).ToList();
+            double dd;
+            if (distance == "") dd = 0;
+            else dd = Convert.ToDouble(distance.ToString()) * 1000;
+
+            //string myQuery = "select TOP(1) g1.id,g1.name,g2.name, g1.Location.STDistance(g2.Location) as mesafe ";
+            string myQuery = "select g2.* "; // g2.id,g2.name,g2.Location" ; //, g1.Location.STDistance(g2.Location) as mesafe ";
+            myQuery += " from Mekan g1,Mekan g2 ";
+            myQuery += " where g1.Ad LIKE '" + name + "%' and g1.Lokasyon.STDistance(g2.Lokasyon) <= " + dd;
+            //+" order by g1.Location.STDistance(g2.Location) DESC";
+
+            var result = GE.Mekans.SqlQuery(myQuery).ToList<Mekan>();
+
+            List<mekan> lM = new List<mekan>();
+
+            foreach (Mekan myL in result)
+            {
+                mekan nM = new mekan()
+                {
+                    ID = myL.ID,
+                    name = myL.Ad,
+                    lat = Convert.ToDouble(myL.Lokasyon.Latitude),
+                    lng = Convert.ToDouble(myL.Lokasyon.Longitude),
+                };
+
+                lM.Add(nM);
+            }
+
+            //var sso=Json(result, JsonRequestBehavior.AllowGet);
+            var sso = Json(lM, JsonRequestBehavior.AllowGet);
+
+            return sso;
+        }
+        [HttpPost]
+        public ActionResult Search3(string name, double distance)
+        {
+            YELKOVANEntities GE = new YELKOVANEntities();
+            //var result = GE.Geos.Where(x => x.name.StartsWith(name)).ToList();
+
+            string myQuery = "select TOP(1 percent) g1.ID,g1.Ad,g2.Ad, g1.Lokasyon.STDistance(g2.Lokasyon) as mesafe ";
+            myQuery += "from dbo.Mekan g1,dbo.Mekan g2 ";
+            myQuery += "where g1.Ad=" + name + "g1.Lokasyon.STDistance(g2.Lokasyon)>" + distance + " order by mesafe DESC";
+
+            var result = GE.Mekans.SqlQuery(myQuery).ToList<Mekan>();
+
+            List<mekan> lM = new List<mekan>();
+
+            foreach (Mekan myL in result)
+            {
+                mekan nM = new mekan()
+                {
+                    ID = myL.ID,
+                    name = myL.Ad,
+                    lat = Convert.ToDouble(myL.Lokasyon.Latitude),
+                    lng = Convert.ToDouble(myL.Lokasyon.Longitude),
+                };
+
+                lM.Add(nM);
+            }
+
+            //var sso=Json(result, JsonRequestBehavior.AllowGet);
+            var sso = Json(lM, JsonRequestBehavior.AllowGet);
+
+            return sso;
+
+        }
+        [HttpPost]
+        public ActionResult Search(string Location)
+        {
+            YELKOVANEntities GE = new YELKOVANEntities();
+            var result = GE.Mekans.Where(x => x.Ad.StartsWith(Location)).ToList();
+            List<mekan> lM = new List<mekan>();
+
+            foreach (Mekan myL in result)
+            {
+                mekan nM = new mekan()
+                {
+                    ID = myL.ID,
+                    name = myL.Ad,
+                    lat = Convert.ToDouble(myL.Lokasyon.Latitude),
+                    lng = Convert.ToDouble(myL.Lokasyon.Longitude),
+                };
+
+                lM.Add(nM);
+            }
+
+            //var sso=Json(result, JsonRequestBehavior.AllowGet);
+            var sso = Json(lM, JsonRequestBehavior.AllowGet);
+
+            return sso;
+
+        }
+    }
+}
+
+//MapController Sonu
+
+// ........................................
+
+//index.
